@@ -1,6 +1,11 @@
+streamlit
 torch
 pandas
-shap
-matplotlib
-captum
+numpy
 scikit-learn
+matplotlib
+seaborn
+shap
+lime
+joblib
+tabulate
