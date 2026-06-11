@@ -2,26 +2,26 @@ import os
 import pandas as pd
 
 def main():
-    if not os.path.exists('results.csv'):
+    if not os.path.exists('outputs/csv/results.csv'):
         print("LNN results ('results.csv') not found. Make sure to run the LNN pipeline first.")
         return
         
-    if not os.path.exists('rf_results.csv'):
+    if not os.path.exists('outputs/csv/rf_results.csv'):
         print("RF results ('rf_results.csv') not found. Run rf_baseline.py first.")
         return
         
-    if not os.path.exists('lstm_results.csv'):
+    if not os.path.exists('outputs/csv/lstm_results.csv'):
         print("LSTM results ('lstm_results.csv') not found. Run train_lstm.py first.")
         return
         
-    lnn_df = pd.read_csv('results.csv').iloc[0]
-    rf_df = pd.read_csv('rf_results.csv').iloc[0]
-    lstm_df = pd.read_csv('lstm_results.csv').iloc[0]
+    lnn_df = pd.read_csv('outputs/csv/results.csv').iloc[0]
+    rf_df = pd.read_csv('outputs/csv/rf_results.csv').iloc[0]
+    lstm_df = pd.read_csv('outputs/csv/lstm_results.csv').iloc[0]
     
     # Get model file sizes
-    lnn_size_mb = os.path.getsize('lnn_model.pth') / (1024 * 1024) if os.path.exists('lnn_model.pth') else 0.0
-    rf_size_mb = os.path.getsize('rf_model.pkl') / (1024 * 1024) if os.path.exists('rf_model.pkl') else 0.0
-    lstm_size_mb = os.path.getsize('lstm_model.pth') / (1024 * 1024) if os.path.exists('lstm_model.pth') else 0.0
+    lnn_size_mb = os.path.getsize('models/lnn_model.pth') / (1024 * 1024) if os.path.exists('models/lnn_model.pth') else 0.0
+    rf_size_mb = os.path.getsize('models/rf_model.pkl') / (1024 * 1024) if os.path.exists('models/rf_model.pkl') else 0.0
+    lstm_size_mb = os.path.getsize('models/lstm_model.pth') / (1024 * 1024) if os.path.exists('models/lstm_model.pth') else 0.0
     
     comp_df = pd.DataFrame({
         'Model': ['LNN', 'RF', 'LSTM'],
@@ -44,8 +44,8 @@ def main():
         
     print("="*80 + "\n")
     
-    comp_df.to_csv('comparison_results.csv', index=False)
-    print("Saved comparison table to 'comparison_results.csv'")
+    comp_df.to_csv('outputs/csv/comparison_results.csv', index=False)
+    print("Saved comparison table to 'outputs/csv/comparison_results.csv'")
 
 if __name__ == "__main__":
     main()

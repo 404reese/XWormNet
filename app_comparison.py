@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 import os
 
 def render():
-    if not os.path.exists("comparison_results.csv"):
+    if not os.path.exists("outputs/csv/comparison_results.csv"):
         st.warning("comparison_results.csv not found. Train models first to generate comparison.")
         return
 
     # LOAD REAL DATA from comparison_results.csv
-    df = pd.read_csv("comparison_results.csv")
+    df = pd.read_csv("outputs/csv/comparison_results.csv")
 
     # Display REAL table
     st.header("📊 Model Comparison (Live Results)")

@@ -203,7 +203,7 @@ def main():
     if isinstance(model.output_layer, nn.Sequential) and len(model.output_layer) > 1:
         model.output_layer = nn.Sequential(model.output_layer[0])
     
-    model.load_state_dict(torch.load("lnn_fixed.pth"))
+    model.load_state_dict(torch.load("models/lnn_fixed.pth"))
     model.eval()
     
     # Model prediction wrapper
@@ -337,7 +337,7 @@ def main():
     plt.xlabel('Mean Absolute SHAP Value')
     plt.title('Native Kernel SHAP Feature Importance (Top 20)')
     plt.tight_layout()
-    plt.savefig("shap_summary.png", bbox_inches='tight')
+    plt.savefig("outputs/images/shap_summary.png", bbox_inches='tight')
     plt.close()
     
     print("\n--- SHAP Feature Importance Ranking ---")
@@ -353,7 +353,7 @@ def main():
     np.random.seed(42)
     lime_indices = np.random.choice(X_test_s.shape[0], 5, replace=False)
     
-    with open("lime_explanations.txt", "w") as f:
+    with open("outputs/reports/lime_explanations.txt", "w") as f:
         f.write("Native LIME Explanations for 5 random test samples\n")
         f.write("=" * 50 + "\n\n")
         
@@ -375,7 +375,7 @@ def main():
             
             f.write("-" * 50 + "\n\n")
     
-    print("\nSaved shap_summary.png and lime_explanations.txt")
+    print("\nSaved outputs/images/shap_summary.png and outputs/reports/lime_explanations.txt")
     print("Done!")
 
 if __name__ == '__main__':

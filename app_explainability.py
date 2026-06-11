@@ -36,11 +36,11 @@ def render():
         with st.spinner("Running inference and generating explanations..."):
             # Load model
             if model_type == "LNN":
-                if not os.path.exists("lnn_model.pth"):
+                if not os.path.exists("models/lnn_model.pth"):
                     st.error("LNN model not found. Please train it first.")
                     return
                 model = LNN(input_dim=sample_features.shape[1], hidden_dim=16, num_steps=6, dt=0.1)
-                model.load_state_dict(torch.load("lnn_model.pth", weights_only=True))
+                model.load_state_dict(torch.load("models/lnn_model.pth", weights_only=True))
                 model.eval()
                 with torch.no_grad():
                     X_t = torch.tensor(sample_features.values, dtype=torch.float32)
@@ -48,10 +48,10 @@ def render():
                     probs = torch.sigmoid(outputs)
                     prediction = (probs > 0.5).int().numpy()[0]
             else:
-                if not os.path.exists("rf_model.pkl"):
+                if not os.path.exists("models/rf_model.pkl"):
                     st.error("RF model not found. Please train it first.")
                     return
-                model = joblib.load("rf_model.pkl")
+                model = joblib.load("models/rf_model.pkl")
                 prediction = model.predict(sample_features)[0]
             
             # SHOW PREDICTION (REAL)

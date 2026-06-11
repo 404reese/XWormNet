@@ -5,7 +5,7 @@ import os
 def render():
     st.header("💾 Export Results")
 
-    comp_path = "comparison_results.csv"
+    comp_path = "outputs/csv/comparison_results.csv"
     if not os.path.exists(comp_path):
         st.warning(f"{comp_path} not found. Please train models first to generate comparison results.")
         return

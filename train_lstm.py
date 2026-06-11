@@ -149,7 +149,7 @@ def main():
     print(f"  Avg Latency (ms): {avg_latency_ms:.5f}")
     
     # Save model
-    model_path = 'lstm_model.pth'
+    model_path = 'models/lstm_model.pth'
     torch.save(model.state_dict(), model_path)
     print(f"\nModel saved to {model_path}")
     
@@ -164,8 +164,8 @@ def main():
         "Avg_Latency_ms": avg_latency_ms,
         "Optimal_Threshold": best_threshold
     }])
-    results_df.to_csv('lstm_results.csv', index=False)
-    print("Results saved to lstm_results.csv")
+    results_df.to_csv('outputs/csv/lstm_results.csv', index=False)
+    print("Results saved to outputs/csv/lstm_results.csv")
 
 if __name__ == "__main__":
     main()

@@ -95,7 +95,7 @@ def render():
                     losses.append(loss.item())
                 
                 # Save model (REAL)
-                torch.save(model.state_dict(), "lnn_model.pth")
+                torch.save(model.state_dict(), "models/lnn_model.pth")
                 
             elif model_type == "LSTM":
                 window_size = 10
@@ -131,7 +131,7 @@ def render():
                         epoch_loss += loss.item() * batch_x.size(0)
                     losses.append(epoch_loss / len(train_dataset))
                     
-                torch.save(model.state_dict(), "lstm_model.pth")
+                torch.save(model.state_dict(), "models/lstm_model.pth")
                 
             else:
                 # Train RF (REAL)
@@ -140,7 +140,7 @@ def render():
                 
                 # Save model (REAL)
                 import joblib
-                joblib.dump(model, "rf_model.pkl")
+                joblib.dump(model, "models/rf_model.pkl")
             
         # EVALUATE (REAL)
         with st.spinner("Evaluating..."):
@@ -186,11 +186,11 @@ def render():
             
             # Approximate size
             if model_type == "LNN":
-                size = os.path.getsize("lnn_model.pth") / (1024 * 1024) if os.path.exists("lnn_model.pth") else 0.007
+                size = os.path.getsize("models/lnn_model.pth") / (1024 * 1024) if os.path.exists("models/lnn_model.pth") else 0.007
             elif model_type == "LSTM":
-                size = os.path.getsize("lstm_model.pth") / (1024 * 1024) if os.path.exists("lstm_model.pth") else 0.0
+                size = os.path.getsize("models/lstm_model.pth") / (1024 * 1024) if os.path.exists("models/lstm_model.pth") else 0.0
             else:
-                size = os.path.getsize("rf_model.pkl") / (1024 * 1024) if os.path.exists("rf_model.pkl") else 0.232
+                size = os.path.getsize("models/rf_model.pkl") / (1024 * 1024) if os.path.exists("models/rf_model.pkl") else 0.232
             
         # SHOW RESULTS (REAL)
         st.success("✅ Training Complete!")
@@ -208,7 +208,7 @@ def render():
             st.line_chart(losses)
         
         # UPDATE COMPARISON (REAL)
-        comp_path = "comparison_results.csv"
+        comp_path = "outputs/csv/comparison_results.csv"
         if os.path.exists(comp_path):
             comparison = pd.read_csv(comp_path)
         else:
@@ -227,4 +227,4 @@ def render():
             comparison = comparison[comparison["Model"] != model_type]
         comparison = pd.concat([comparison, new_row], ignore_index=True)
         comparison.to_csv(comp_path, index=False)
-        st.info("📊 Results saved to comparison_results.csv")
+        st.info("📊 Results saved to outputs/csv/comparison_results.csv")

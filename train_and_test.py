@@ -538,13 +538,13 @@ def evaluate(model, X, y, threshold=None, set_name="TEST"):
             'y_pred': preds,
             'probability': probs
         })
-        pred_df.to_csv('predictions.csv', index=False)
+        pred_df.to_csv('outputs/csv/predictions.csv', index=False)
         
         cm_df = pd.DataFrame({
             'Metric': ['True Negative (TN)', 'False Positive (FP)', 'False Negative (FN)', 'True Positive (TP)'],
             'Count': [tn, fp, fn, tp]
         })
-        cm_df.to_csv('confusion_matrix.csv', index=False)
+        cm_df.to_csv('outputs/csv/confusion_matrix.csv', index=False)
         
         results_df = pd.DataFrame([{
             "Precision": precision,
@@ -704,7 +704,7 @@ def main():
     print("=" * 80)
     
     # Save clean model state dict
-    model_save_path = "lnn_model.pth"
+    model_save_path = "models/lnn_model.pth"
     torch.save(model_c.state_dict(), model_save_path)
     print(f"Clean LNN model parameters saved to: {model_save_path}")
     

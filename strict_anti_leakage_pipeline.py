@@ -461,7 +461,7 @@ else:
 # -------------------------------------------------------------------------
 # OUTPUT
 # -------------------------------------------------------------------------
-torch.save(model.state_dict(), "lnn_fixed.pth")
+torch.save(model.state_dict(), "models/lnn_fixed.pth")
 df_results = pd.DataFrame([{
     "Real_F1": real_metrics['f1'],
     "Real_ROC_AUC": real_metrics['roc_auc'],
@@ -470,5 +470,5 @@ df_results = pd.DataFrame([{
     "Shuffle_F1": shuff_metrics['f1'],
     "Shuffle_ROC_AUC": shuff_metrics['roc_auc']
 }])
-df_results.to_csv("fixed_results.csv", index=False)
-print("\nSaved lnn_fixed.pth and fixed_results.csv")
+df_results.to_csv("outputs/csv/fixed_results.csv", index=False)
+print("\nSaved models/lnn_fixed.pth and outputs/csv/fixed_results.csv")

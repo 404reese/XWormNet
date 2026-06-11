@@ -456,12 +456,12 @@ print("             11. SAVING OUTPUTS")
 print("=" * 50)
 
 # Save Model State Dict
-model_save_path = "lnn_multi.pth"
+model_save_path = "models/lnn_multi.pth"
 torch.save(model.state_dict(), model_save_path)
 print(f"Model weights saved to: {model_save_path}")
 
 # Save metrics CSV
-results_save_path = "multi_results.csv"
+results_save_path = "outputs/csv/multi_results.csv"
 tn, fp, fn, tp = test_metrics['confusion_matrix']
 metrics_df = pd.DataFrame([{
     "Precision": test_metrics["precision"],
