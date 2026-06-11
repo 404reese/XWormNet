@@ -3,3 +3,4 @@ pandas
 shap
 matplotlib
 captum
+scikit-learn
