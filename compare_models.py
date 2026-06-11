@@ -10,20 +10,26 @@ def main():
         print("RF results ('rf_results.csv') not found. Run rf_baseline.py first.")
         return
         
+    if not os.path.exists('lstm_results.csv'):
+        print("LSTM results ('lstm_results.csv') not found. Run train_lstm.py first.")
+        return
+        
     lnn_df = pd.read_csv('results.csv').iloc[0]
     rf_df = pd.read_csv('rf_results.csv').iloc[0]
+    lstm_df = pd.read_csv('lstm_results.csv').iloc[0]
     
     # Get model file sizes
     lnn_size_mb = os.path.getsize('lnn_model.pth') / (1024 * 1024) if os.path.exists('lnn_model.pth') else 0.0
     rf_size_mb = os.path.getsize('rf_model.pkl') / (1024 * 1024) if os.path.exists('rf_model.pkl') else 0.0
+    lstm_size_mb = os.path.getsize('lstm_model.pth') / (1024 * 1024) if os.path.exists('lstm_model.pth') else 0.0
     
     comp_df = pd.DataFrame({
-        'Model': ['LNN', 'RF'],
-        'Precision': [lnn_df['Precision'], rf_df['Precision']],
-        'Recall': [lnn_df['Recall'], rf_df['Recall']],
-        'F1': [lnn_df['F1_Score'], rf_df['F1_Score']],
-        'Latency (ms)': [lnn_df['Avg_Latency_ms'], rf_df['Avg_Latency_ms']],
-        'Size (MB)': [lnn_size_mb, rf_size_mb]
+        'Model': ['LNN', 'RF', 'LSTM'],
+        'Precision': [lnn_df['Precision'], rf_df['Precision'], lstm_df['Precision']],
+        'Recall': [lnn_df['Recall'], rf_df['Recall'], lstm_df['Recall']],
+        'F1': [lnn_df['F1_Score'], rf_df['F1_Score'], lstm_df['F1_Score']],
+        'Latency (ms)': [lnn_df['Avg_Latency_ms'], rf_df['Avg_Latency_ms'], lstm_df['Avg_Latency_ms']],
+        'Size (MB)': [lnn_size_mb, rf_size_mb, lstm_size_mb]
     })
     
     # Format for display

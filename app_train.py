@@ -1,9 +1,13 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import torch
+import torch.nn as nn
+from torch.utils.data import TensorDataset, DataLoader
 import os
 import time
-from lnn_model import LNN  # changed from LNNClassifier as per your repo
+from lnn_model import LNN
+from lstm_model import LSTMClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_score, recall_score, f1_score
@@ -11,6 +15,10 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 def inference_latency(model, X_test, model_type):
     start = time.time()
     if model_type == "LNN":
+        X_t = torch.tensor(X_test, dtype=torch.float32)
+        with torch.no_grad():
+            model(X_t)
+    elif model_type == "LSTM":
         X_t = torch.tensor(X_test, dtype=torch.float32)
         with torch.no_grad():
             model(X_t)
@@ -23,7 +31,7 @@ def render():
     st.header("🎯 Train New Model")
 
     # SELECT MODEL (REAL)
-    model_type = st.selectbox("Select Model", ["LNN", "RF"])
+    model_type = st.selectbox("Select Model", ["LNN", "RF", "LSTM"])
 
     # UPLOAD DATASET (REAL)
     uploaded_file = st.file_uploader("Upload CSV Dataset", type=["csv"])
@@ -89,6 +97,42 @@ def render():
                 # Save model (REAL)
                 torch.save(model.state_dict(), "lnn_model.pth")
                 
+            elif model_type == "LSTM":
+                window_size = 10
+                X_vals = X_train.values
+                y_vals = y_train.values
+                
+                X_seq, y_seq = [], []
+                for i in range(len(X_vals) - window_size + 1):
+                    X_seq.append(X_vals[i:i+window_size])
+                    y_seq.append(y_vals[i+window_size-1])
+                X_seq = np.array(X_seq)
+                y_seq = np.array(y_seq)
+                
+                model = LSTMClassifier(input_dim=X_train.shape[1], hidden_size=64)
+                criterion = torch.nn.BCELoss()
+                optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+                
+                X_tr_t = torch.tensor(X_seq, dtype=torch.float32)
+                y_tr_t = torch.tensor(y_seq, dtype=torch.float32).unsqueeze(1)
+                
+                train_dataset = TensorDataset(X_tr_t, y_tr_t)
+                train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+                
+                losses = []
+                for epoch in range(20):
+                    epoch_loss = 0.0
+                    for batch_x, batch_y in train_loader:
+                        optimizer.zero_grad()
+                        outputs = model(batch_x)
+                        loss = criterion(outputs, batch_y)
+                        loss.backward()
+                        optimizer.step()
+                        epoch_loss += loss.item() * batch_x.size(0)
+                    losses.append(epoch_loss / len(train_dataset))
+                    
+                torch.save(model.state_dict(), "lstm_model.pth")
+                
             else:
                 # Train RF (REAL)
                 model = RandomForestClassifier(n_estimators=100, n_jobs=-1)
@@ -106,6 +150,23 @@ def render():
                     outputs = model(X_te_t)
                     probs = torch.sigmoid(outputs)
                     y_pred = (probs > 0.5).int().numpy().flatten()
+            elif model_type == "LSTM":
+                window_size = 10
+                X_vals = X_test.values
+                y_vals = y_test.values
+                
+                X_seq_test, y_seq_test = [], []
+                for i in range(len(X_vals) - window_size + 1):
+                    X_seq_test.append(X_vals[i:i+window_size])
+                    y_seq_test.append(y_vals[i+window_size-1])
+                X_seq_test = np.array(X_seq_test)
+                y_test_adjusted = np.array(y_seq_test)
+                
+                X_te_t = torch.tensor(X_seq_test, dtype=torch.float32)
+                with torch.no_grad():
+                    probs = model(X_te_t)
+                    y_pred = (probs > 0.5).int().numpy().flatten()
+                y_test = y_test_adjusted
             else:
                 y_pred = model.predict(X_test)
             
@@ -117,11 +178,17 @@ def render():
             else:
                 precision = recall = f1 = 0.0
 
-            latency = inference_latency(model, X_test.values[:100], model_type)
+            if model_type == "LSTM":
+                # For inference latency on LSTM we need sequential data
+                latency = inference_latency(model, X_seq_test[:100], model_type)
+            else:
+                latency = inference_latency(model, X_test.values[:100], model_type)
             
             # Approximate size
             if model_type == "LNN":
                 size = os.path.getsize("lnn_model.pth") / (1024 * 1024) if os.path.exists("lnn_model.pth") else 0.007
+            elif model_type == "LSTM":
+                size = os.path.getsize("lstm_model.pth") / (1024 * 1024) if os.path.exists("lstm_model.pth") else 0.0
             else:
                 size = os.path.getsize("rf_model.pkl") / (1024 * 1024) if os.path.exists("rf_model.pkl") else 0.232
             
@@ -136,7 +203,7 @@ def render():
         col5.metric("Model Size", f"{size:.3f} MB")
         
         # TRAINING LOSS CURVE (REAL)
-        if model_type == "LNN":
+        if model_type in ["LNN", "LSTM"]:
             st.subheader("Training Loss")
             st.line_chart(losses)
         

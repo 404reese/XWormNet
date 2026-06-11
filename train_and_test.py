@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 
+# Now comparing LNN vs RF vs LSTM
+
 # Import LNN model from lnn_model.py
 from lnn_model import LNN
 
