@@ -1,0 +1,53 @@
+Native LIME Explanations for 5 random test samples
+==================================================
+
+Sample 1 (Index 56017):
+True Label: Benign
+Model Prediction: Benign: 1.0000, Attack: 0.0000
+Top contributing features:
+  frame.len: -0.0161
+  tcp.window_size_scalefactor: 0.0125
+  tcp.window_size_value: 0.0036
+  tcp.pdu.size: -0.0019
+--------------------------------------------------
+
+Sample 2 (Index 46693):
+True Label: Attack
+Model Prediction: Benign: 0.0014, Attack: 0.9986
+Top contributing features:
+  tcp.window_size_scalefactor: 0.3499
+  frame.len: -0.1654
+  tcp.window_size_value: -0.0921
+  tcp.pdu.size: -0.0251
+--------------------------------------------------
+
+Sample 3 (Index 13770):
+True Label: Attack
+Model Prediction: Benign: 0.0023, Attack: 0.9977
+Top contributing features:
+  tcp.window_size_scalefactor: 0.3550
+  frame.len: -0.0583
+  tcp.window_size_value: 0.0452
+  tcp.pdu.size: -0.0191
+--------------------------------------------------
+
+Sample 4 (Index 14446):
+True Label: Benign
+Model Prediction: Benign: 0.9962, Attack: 0.0038
+Top contributing features:
+  tcp.window_size_scalefactor: 0.3181
+  frame.len: -0.2299
+  tcp.window_size_value: -0.0591
+  tcp.pdu.size: 0.0314
+--------------------------------------------------
+
+Sample 5 (Index 7625):
+True Label: Benign
+Model Prediction: Benign: 0.9967, Attack: 0.0033
+Top contributing features:
+  frame.len: -0.3104
+  tcp.window_size_scalefactor: 0.3058
+  tcp.window_size_value: -0.1612
+  tcp.pdu.size: -0.0023
+--------------------------------------------------
+
