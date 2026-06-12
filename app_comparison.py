@@ -12,7 +12,7 @@ def render():
     df = pd.read_csv("outputs/csv/comparison_results.csv")
 
     # Display REAL table
-    st.header("📊 Model Comparison (Live Results)")
+    st.header(":material/bar_chart: Model Comparison (Live Results)")
     st.dataframe(df, use_container_width=True)
 
     col1, col2 = st.columns(2)
@@ -21,7 +21,7 @@ def render():
         # REAL bar chart: F1 Score
         st.subheader("F1 Score Comparison")
         fig, ax = plt.subplots(figsize=(6,4))
-        bars = ax.bar(df["Model"], df["F1"], color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"][:len(df)])
+        bars = ax.bar(df["Model"], df["F1"], color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2"][:len(df)])
         ax.set_ylabel("F1 Score")
         ax.set_ylim(0, 1.1)
         for bar in bars:
@@ -35,7 +35,7 @@ def render():
         st.subheader("Inference Latency (ms)")
         fig, ax = plt.subplots(figsize=(6,4))
         if "Latency (ms)" in df.columns:
-            bars = ax.bar(df["Model"], df["Latency (ms)"], color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"][:len(df)])
+            bars = ax.bar(df["Model"], df["Latency (ms)"], color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2"][:len(df)])
             ax.set_ylabel("Latency (ms)")
             for bar in bars:
                 height = bar.get_height()
@@ -46,8 +46,8 @@ def render():
             st.write("Latency data not available.")
 
     # REAL insight
-    st.info("Key Insight: Transformer achieves SOTA accuracy, but LNN still fastest", icon=":material/lightbulb:")
+    st.info("Key Insight: LNN: Best IoT edge (fast + small), RF: Best enterprise (accuracy)", icon=":material/lightbulb:")
 
     # Download button (REAL CSV)
     csv = df.to_csv(index=False)
-    st.download_button("📥 Download Results (CSV)", csv, file_name="comparison_results.csv")
+    st.download_button("Download Results (CSV)", csv, file_name="comparison_results.csv", icon=":material/download:")

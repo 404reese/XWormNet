@@ -26,12 +26,17 @@ def main():
         print("GAN results ('gan_results.csv') not found. Run train_gan.py first.")
         return
         
+    if not os.path.exists('outputs/csv/autoregressive_results.csv'):
+        print("AR results ('autoregressive_results.csv') not found. Run train_autoregressive.py first.")
+        return
+        
     lnn_df = pd.read_csv('outputs/csv/results.csv').iloc[0]
     rf_df = pd.read_csv('outputs/csv/rf_results.csv').iloc[0]
     lstm_df = pd.read_csv('outputs/csv/lstm_results.csv').iloc[0]
     gru_df = pd.read_csv('outputs/csv/gru_results.csv').iloc[0]
     tf_df = pd.read_csv('outputs/csv/transformer_results.csv').iloc[0]
     gan_df = pd.read_csv('outputs/csv/gan_results.csv').iloc[0]
+    ar_df = pd.read_csv('outputs/csv/autoregressive_results.csv').iloc[0]
     
     # Get model file sizes
     lnn_size_mb = os.path.getsize('models/lnn_model.pth') / (1024 * 1024) if os.path.exists('models/lnn_model.pth') else 0.0
@@ -40,14 +45,15 @@ def main():
     gru_size_mb = os.path.getsize('models/gru_model.pth') / (1024 * 1024) if os.path.exists('models/gru_model.pth') else 0.0
     tf_size_mb = os.path.getsize('models/transformer_model.pth') / (1024 * 1024) if os.path.exists('models/transformer_model.pth') else 0.0
     gan_size_mb = os.path.getsize('models/gan_model.pth') / (1024 * 1024) if os.path.exists('models/gan_model.pth') else 0.0
+    ar_size_mb = os.path.getsize('models/autoregressive_model.pth') / (1024 * 1024) if os.path.exists('models/autoregressive_model.pth') else 0.0
     
     comp_df = pd.DataFrame({
-        'Model': ['LNN', 'RF', 'LSTM', 'GRU', 'Transformer', 'GAN'],
-        'Precision': [lnn_df['Precision'], rf_df['Precision'], lstm_df['Precision'], gru_df['Precision'], tf_df['Precision'], gan_df['Precision']],
-        'Recall': [lnn_df['Recall'], rf_df['Recall'], lstm_df['Recall'], gru_df['Recall'], tf_df['Recall'], gan_df['Recall']],
-        'F1': [lnn_df['F1_Score'], rf_df['F1_Score'], lstm_df['F1_Score'], gru_df['F1_Score'], tf_df['F1_Score'], gan_df['F1_Score']],
-        'Latency (ms)': [lnn_df['Avg_Latency_ms'], rf_df['Avg_Latency_ms'], lstm_df['Avg_Latency_ms'], gru_df['Avg_Latency_ms'], tf_df['Avg_Latency_ms'], gan_df['Avg_Latency_ms']],
-        'Size (MB)': [lnn_size_mb, rf_size_mb, lstm_size_mb, gru_size_mb, tf_size_mb, gan_size_mb]
+        'Model': ['LNN', 'RF', 'LSTM', 'GRU', 'Transformer', 'GAN', 'AR'],
+        'Precision': [lnn_df['Precision'], rf_df['Precision'], lstm_df['Precision'], gru_df['Precision'], tf_df['Precision'], gan_df['Precision'], ar_df['Precision']],
+        'Recall': [lnn_df['Recall'], rf_df['Recall'], lstm_df['Recall'], gru_df['Recall'], tf_df['Recall'], gan_df['Recall'], ar_df['Recall']],
+        'F1': [lnn_df['F1_Score'], rf_df['F1_Score'], lstm_df['F1_Score'], gru_df['F1_Score'], tf_df['F1_Score'], gan_df['F1_Score'], ar_df['F1_Score']],
+        'Latency (ms)': [lnn_df['Avg_Latency_ms'], rf_df['Avg_Latency_ms'], lstm_df['Avg_Latency_ms'], gru_df['Avg_Latency_ms'], tf_df['Avg_Latency_ms'], gan_df['Avg_Latency_ms'], ar_df['Avg_Latency_ms']],
+        'Size (MB)': [lnn_size_mb, rf_size_mb, lstm_size_mb, gru_size_mb, tf_size_mb, gan_size_mb, ar_size_mb]
     })
     
     # Format for display
