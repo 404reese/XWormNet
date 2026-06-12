@@ -9,6 +9,7 @@ import time
 from lnn_model import LNN
 from lstm_model import LSTMClassifier
 from gru_model import GRUClassifier
+from transformer_model import TrafficTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_score, recall_score, f1_score
@@ -19,7 +20,7 @@ def inference_latency(model, X_test, model_type):
         X_t = torch.tensor(X_test, dtype=torch.float32)
         with torch.no_grad():
             model(X_t)
-    elif model_type in ["LSTM", "GRU"]:
+    elif model_type in ["LSTM", "GRU", "Transformer"]:
         X_t = torch.tensor(X_test, dtype=torch.float32)
         with torch.no_grad():
             model(X_t)
@@ -32,7 +33,7 @@ def render():
     st.header("🎯 Train New Model")
 
     # SELECT MODEL (REAL)
-    model_type = st.selectbox("Select Model", ["LNN", "RF", "LSTM", "GRU"])
+    model_type = st.selectbox("Select Model", ["LNN", "RF", "LSTM", "GRU", "Transformer"])
 
     # UPLOAD DATASET (REAL)
     uploaded_file = st.file_uploader("Upload CSV Dataset", type=["csv"])
@@ -108,7 +109,7 @@ def render():
                 # Save model (REAL)
                 torch.save(model.state_dict(), "models/lnn_model.pth")
                 
-            elif model_type in ["LSTM", "GRU"]:
+            elif model_type in ["LSTM", "GRU", "Transformer"]:
                 window_size = 10
                 X_vals = X_train.values
                 y_vals = y_train.values
@@ -122,11 +123,14 @@ def render():
                 
                 if model_type == "LSTM":
                     model = LSTMClassifier(input_dim=X_train.shape[1], hidden_size=64)
-                else:
+                elif model_type == "GRU":
                     model = GRUClassifier(input_dim=X_train.shape[1], hidden_size=64)
+                else:
+                    model = TrafficTransformer(input_dim=X_train.shape[1], hidden_size=64, nhead=8, num_layers=2)
                     
                 criterion = torch.nn.BCELoss()
-                optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+                lr = 0.0005 if model_type == "Transformer" else 0.001
+                optimizer = torch.optim.Adam(model.parameters(), lr=lr)
                 
                 X_tr_t = torch.tensor(X_seq, dtype=torch.float32)
                 y_tr_t = torch.tensor(y_seq, dtype=torch.float32).unsqueeze(1)
@@ -135,7 +139,8 @@ def render():
                 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
                 
                 losses = []
-                for epoch in range(20):
+                epochs_seq = 25 if model_type == "Transformer" else 20
+                for epoch in range(epochs_seq):
                     epoch_loss = 0.0
                     for batch_x, batch_y in train_loader:
                         optimizer.zero_grad()
@@ -148,8 +153,10 @@ def render():
                     
                 if model_type == "LSTM":
                     torch.save(model.state_dict(), "models/lstm_model.pth")
-                else:
+                elif model_type == "GRU":
                     torch.save(model.state_dict(), "models/gru_model.pth")
+                else:
+                    torch.save(model.state_dict(), "models/transformer_model.pth")
                 
             else:
                 # Train RF (REAL)
@@ -168,7 +175,7 @@ def render():
                     outputs = model(X_te_t)
                     probs = torch.sigmoid(outputs)
                     y_pred = (probs > 0.5).int().numpy().flatten()
-            elif model_type in ["LSTM", "GRU"]:
+            elif model_type in ["LSTM", "GRU", "Transformer"]:
                 window_size = 10
                 X_vals = X_test.values
                 y_vals = y_test.values
@@ -196,7 +203,7 @@ def render():
             else:
                 precision = recall = f1 = 0.0
 
-            if model_type in ["LSTM", "GRU"]:
+            if model_type in ["LSTM", "GRU", "Transformer"]:
                 # For inference latency on sequences we need sequential data
                 latency = inference_latency(model, X_seq_test[:100], model_type)
             else:
@@ -209,6 +216,8 @@ def render():
                 size = os.path.getsize("models/lstm_model.pth") / (1024 * 1024) if os.path.exists("models/lstm_model.pth") else 0.0
             elif model_type == "GRU":
                 size = os.path.getsize("models/gru_model.pth") / (1024 * 1024) if os.path.exists("models/gru_model.pth") else 0.0
+            elif model_type == "Transformer":
+                size = os.path.getsize("models/transformer_model.pth") / (1024 * 1024) if os.path.exists("models/transformer_model.pth") else 0.0
             else:
                 size = os.path.getsize("models/rf_model.pkl") / (1024 * 1024) if os.path.exists("models/rf_model.pkl") else 0.232
             
@@ -223,7 +232,7 @@ def render():
         col5.metric("Model Size", f"{size:.3f} MB")
         
         # TRAINING LOSS CURVE (REAL)
-        if model_type in ["LNN", "LSTM", "GRU"]:
+        if model_type in ["LNN", "LSTM", "GRU", "Transformer"]:
             st.subheader("Training Loss")
             st.line_chart(losses)
         

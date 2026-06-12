@@ -21,7 +21,7 @@ def render():
         # REAL bar chart: F1 Score
         st.subheader("F1 Score Comparison")
         fig, ax = plt.subplots(figsize=(6,4))
-        bars = ax.bar(df["Model"], df["F1"], color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"][:len(df)])
+        bars = ax.bar(df["Model"], df["F1"], color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"][:len(df)])
         ax.set_ylabel("F1 Score")
         ax.set_ylim(0, 1.1)
         for bar in bars:
@@ -35,7 +35,7 @@ def render():
         st.subheader("Inference Latency (ms)")
         fig, ax = plt.subplots(figsize=(6,4))
         if "Latency (ms)" in df.columns:
-            bars = ax.bar(df["Model"], df["Latency (ms)"], color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"][:len(df)])
+            bars = ax.bar(df["Model"], df["Latency (ms)"], color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"][:len(df)])
             ax.set_ylabel("Latency (ms)")
             for bar in bars:
                 height = bar.get_height()
@@ -46,7 +46,7 @@ def render():
             st.write("Latency data not available.")
 
     # REAL insight
-    st.info("💡 Key Insight: LNN still fastest, LSTM better than RF on sequences.")
+    st.info("Key Insight: Transformer achieves SOTA accuracy, but LNN still fastest", icon=":material/lightbulb:")
 
     # Download button (REAL CSV)
     csv = df.to_csv(index=False)
