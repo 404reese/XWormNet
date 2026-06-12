@@ -59,7 +59,17 @@ def render():
     X = data.drop(columns=["label", "attack_type", "source_file"], errors="ignore")
     X = X.select_dtypes(include=["number"])
     X = X.dropna(axis=1)
-    y = data["label"]
+    # Normalize labels to integer 0/1 for training. Handle numeric and string labels.
+    y_raw = data["label"]
+    # Try converting to numeric first (handles 0/1 already stored as numbers or numeric strings)
+    y_numeric = pd.to_numeric(y_raw, errors="coerce")
+    if y_numeric.isna().any():
+        # For non-numeric labels (e.g., 'benign' / 'malicious' or other strings), map 'benign'->0 else 1
+        y_str = y_raw.astype(str).str.lower()
+        y_mapped = (y_str != "benign").astype(int)
+        y = y_numeric.fillna(y_mapped).astype(int)
+    else:
+        y = y_numeric.astype(int)
 
     if len(X) == 0:
         st.error("No numeric data found to train on.")
