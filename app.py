@@ -4,6 +4,9 @@ import app_comparison
 import app_train
 import app_explainability
 import app_export
+import importlib
+
+importlib.reload(app_explainability)
 
 st.set_page_config(layout="wide", page_title="XWormNet Dashboard")
 st.title("🦠 XWormNet - Explainable LNN for Zero-Day Worm Detection")

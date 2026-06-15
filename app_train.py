@@ -5,12 +5,15 @@ import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 import os
+import sys
 import time
 from lnn_model import LNN
 from lstm_model import LSTMClassifier
 from gru_model import GRUClassifier
 from transformer_model import TrafficTransformer
 from autoregressive_model import AutoregressiveClassifier
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+from rnn_model import RNNClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_score, recall_score, f1_score
@@ -21,7 +24,7 @@ def inference_latency(model, X_test, model_type):
         X_t = torch.tensor(X_test, dtype=torch.float32)
         with torch.no_grad():
             model(X_t)
-    elif model_type in ["LSTM", "GRU", "Transformer", "AR"]:
+    elif model_type in ["LSTM", "GRU", "Transformer", "AR", "RNN"]:
         X_t = torch.tensor(X_test, dtype=torch.float32)
         with torch.no_grad():
             model(X_t)
@@ -34,7 +37,7 @@ def render():
     st.header("🎯 Train New Model")
 
     # SELECT MODEL (REAL)
-    model_type = st.selectbox("Select Model", ["LNN", "RF", "LSTM", "GRU", "Transformer", "GAN", "AR"])
+    model_type = st.selectbox("Select Model", ["LNN", "RF", "LSTM", "GRU", "Transformer", "GAN", "AR", "RNN"])
 
     # UPLOAD DATASET (REAL)
     uploaded_file = st.file_uploader("Upload CSV Dataset", type=["csv"])
@@ -110,7 +113,7 @@ def render():
                 # Save model (REAL)
                 torch.save(model.state_dict(), "models/lnn_model.pth")
                 
-            elif model_type in ["LSTM", "GRU", "Transformer", "AR"]:
+            elif model_type in ["LSTM", "GRU", "Transformer", "AR", "RNN"]:
                 window_size = 10
                 X_vals = X_train.values
                 y_vals = y_train.values
@@ -128,6 +131,8 @@ def render():
                     model = GRUClassifier(input_dim=X_train.shape[1], hidden_size=64)
                 elif model_type == "AR":
                     model = AutoregressiveClassifier(window_size=window_size, input_dim=X_train.shape[1], ar_order=5)
+                elif model_type == "RNN":
+                    model = RNNClassifier(input_dim=X_train.shape[1], hidden_size=64)
                 else:
                     model = TrafficTransformer(input_dim=X_train.shape[1], hidden_size=64, nhead=8, num_layers=2)
                     
@@ -166,6 +171,8 @@ def render():
                     torch.save(model.state_dict(), "models/gru_model.pth")
                 elif model_type == "AR":
                     torch.save(model.state_dict(), "models/autoregressive_model.pth")
+                elif model_type == "RNN":
+                    torch.save(model.state_dict(), "models/rnn_model.pth")
                 else:
                     torch.save(model.state_dict(), "models/transformer_model.pth")
                 
@@ -186,7 +193,7 @@ def render():
                     outputs = model(X_te_t)
                     probs = torch.sigmoid(outputs)
                     y_pred = (probs > 0.5).int().numpy().flatten()
-            elif model_type in ["LSTM", "GRU", "Transformer", "AR"]:
+            elif model_type in ["LSTM", "GRU", "Transformer", "AR", "RNN"]:
                 window_size = 10
                 X_vals = X_test.values
                 y_vals = y_test.values
@@ -214,7 +221,7 @@ def render():
             else:
                 precision = recall = f1 = 0.0
 
-            if model_type in ["LSTM", "GRU", "Transformer", "AR"]:
+            if model_type in ["LSTM", "GRU", "Transformer", "AR", "RNN"]:
                 # For inference latency on sequences we need sequential data
                 latency = inference_latency(model, X_seq_test[:100], model_type)
             else:
@@ -231,6 +238,8 @@ def render():
                 size = os.path.getsize("models/transformer_model.pth") / (1024 * 1024) if os.path.exists("models/transformer_model.pth") else 0.0
             elif model_type == "AR":
                 size = os.path.getsize("models/autoregressive_model.pth") / (1024 * 1024) if os.path.exists("models/autoregressive_model.pth") else 0.0
+            elif model_type == "RNN":
+                size = os.path.getsize("models/rnn_model.pth") / (1024 * 1024) if os.path.exists("models/rnn_model.pth") else 0.0
             else:
                 size = os.path.getsize("models/rf_model.pkl") / (1024 * 1024) if os.path.exists("models/rf_model.pkl") else 0.232
             
@@ -245,7 +254,7 @@ def render():
         col5.metric("Model Size", f"{size:.3f} MB")
         
         # TRAINING LOSS CURVE (REAL)
-        if model_type in ["LNN", "LSTM", "GRU", "Transformer", "AR"]:
+        if model_type in ["LNN", "LSTM", "GRU", "Transformer", "AR", "RNN"]:
             st.subheader("Training Loss")
             st.line_chart(losses)
         

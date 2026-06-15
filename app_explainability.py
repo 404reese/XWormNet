@@ -3,6 +3,7 @@ import pandas as pd
 import torch
 import os
 import joblib
+import numpy as np
 from lnn_model import LNN
 from explainability import explain_with_shap, explain_with_lime
 
@@ -39,11 +40,22 @@ def render():
                 if not os.path.exists("models/lnn_model.pth"):
                     st.error("LNN model not found. Please train it first.")
                     return
-                model = LNN(input_dim=sample_features.shape[1], hidden_dim=16, num_steps=6, dt=0.1)
-                model.load_state_dict(torch.load("models/lnn_model.pth", weights_only=True))
+                sd = torch.load("models/lnn_model.pth", weights_only=True)
+                input_dim = sd["input_layer.weight"].shape[1]
+                
+                # Align features
+                if sample_features.shape[1] > input_dim:
+                    feat_vals = sample_features.values[:, :input_dim]
+                elif sample_features.shape[1] < input_dim:
+                    feat_vals = np.pad(sample_features.values, ((0,0), (0, input_dim - sample_features.shape[1])))
+                else:
+                    feat_vals = sample_features.values
+
+                model = LNN(input_dim=input_dim, hidden_dim=16, num_steps=6, dt=0.1)
+                model.load_state_dict(sd)
                 model.eval()
                 with torch.no_grad():
-                    X_t = torch.tensor(sample_features.values, dtype=torch.float32)
+                    X_t = torch.tensor(feat_vals, dtype=torch.float32)
                     outputs = model(X_t)
                     probs = torch.sigmoid(outputs)
                     prediction = (probs > 0.5).int().numpy()[0]
@@ -78,3 +90,70 @@ def render():
             top_features = shap_result.nlargest(5)
             for feature, value in top_features.items():
                 st.write(f"• **{feature}**: {value:.3f}")
+
+    # LNN LIQUID PARAMETERS TAB
+    st.divider()
+    st.header("💧 LNN Liquid Parameters Analysis")
+    
+    if st.button("Generate Liquid Parameter Visualizations"):
+        if 'sample_features' not in locals():
+            st.error("Please load or upload a sample first.")
+            return
+            
+        with st.spinner("Analyzing liquid dynamics..."):
+            from visualize_liquid_params import plot_liquid_gates_over_time, plot_hidden_evolution_heatmap, compare_lnn_vs_lstm
+            from lstm_model import LSTMClassifier
+            
+            # Load LNN model
+            if not os.path.exists("models/lnn_model.pth"):
+                st.error("LNN model not found. Please train it first.")
+                return
+                
+            sd_lnn = torch.load("models/lnn_model.pth", weights_only=True)
+            input_dim = sd_lnn["input_layer.weight"].shape[1]
+            
+            lnn_model = LNN(input_dim=input_dim, hidden_dim=16, num_steps=6, dt=0.1)
+            lnn_model.load_state_dict(sd_lnn)
+            lnn_model.eval()
+            
+            # Load LSTM model if exists, else pass None
+            lstm_model = None
+            if os.path.exists("models/lstm_model.pth"):
+                sd_lstm = torch.load("models/lstm_model.pth", weights_only=True)
+                lstm_input_dim = sd_lstm["lstm.weight_ih_l0"].shape[1]
+                lstm_model = LSTMClassifier(input_dim=lstm_input_dim, hidden_size=64)
+                lstm_model.load_state_dict(sd_lstm)
+                lstm_model.eval()
+                
+            # Prepare data sequence for plotting (batch_size=1)
+            import numpy as np
+            if sample_features.shape[1] > input_dim:
+                feat_vals = sample_features.values[:, :input_dim]
+            elif sample_features.shape[1] < input_dim:
+                feat_vals = np.pad(sample_features.values, ((0,0), (0, input_dim - sample_features.shape[1])))
+            else:
+                feat_vals = sample_features.values
+                
+            X_seq = torch.tensor(feat_vals, dtype=torch.float32)
+            
+            # Generate plots
+            plot_liquid_gates_over_time(lnn_model, X_seq)
+            plot_hidden_evolution_heatmap(lnn_model, X_seq)
+            compare_lnn_vs_lstm(lnn_model, lstm_model, X_seq)
+            
+            st.success("Visualizations generated successfully!")
+            
+            tab1, tab2, tab3 = st.tabs(["Gate Evolution", "Hidden State", "LNN vs LSTM"])
+            
+            with tab1:
+                st.image("figures/lnn_liquid_parameters.png", caption="LNN Gate Evolution Over Time")
+                st.info("The decay and input gates dynamically adapt at each ODE unrolling step based on the hidden state.")
+                
+            with tab2:
+                st.image("figures/lnn_hidden_heatmap.png", caption="LNN Hidden State Evolution Heatmap")
+                st.info("Visualizes how individual hidden units evolve continuously during processing.")
+                
+            with tab3:
+                st.image("figures/lnn_vs_lstm_parameters.png", caption="LNN vs LSTM Parameter Comparison")
+                st.info("LNN's liquid parameters change over time → enables adaptive behavior for zero-day worms (unlike LSTM's fixed weights)")
+
