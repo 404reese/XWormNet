@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "research-proposal": {
+      "source": "luwill/research-skills",
+      "sourceType": "github",
+      "skillPath": "research-proposal/SKILL.md",
+      "computedHash": "af95ac90167316b94ac02810461f3eeaa1e207ce23cb1d1f49edaa226257951c"
+    }
+  }
+}
