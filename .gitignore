@@ -3,3 +3,4 @@ venv
 __pycache__
 *.pth
 *.csv
+docs/meeting-brief.md
